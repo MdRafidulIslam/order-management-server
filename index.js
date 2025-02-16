@@ -6,6 +6,13 @@ require("dotenv").config();
 
 const port = process.env.PORT || 5000;
 
+app.use(
+  cors({
+    origin: ["http://localhost:5173","https://user-order-management.web.app"],
+    credentials: true,
+  })
+);
+
 // LFzoym6bC8sgtiWn
 // ordersystem
 
@@ -107,7 +114,7 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
