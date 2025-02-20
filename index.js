@@ -6,12 +6,27 @@ require("dotenv").config();
 
 const port = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: ["http://localhost:5173","https://user-order-management.web.app"],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: ["http://localhost:5173","https://user-order-management.web.app"],
+//     credentials: true,
+//   })
+// );
+
+
+
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://user-order-management.web.app",
+  ],
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+
+app.use(express.json());
 
 // LFzoym6bC8sgtiWn
 // ordersystem
@@ -30,10 +45,10 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const orderCollection = client.db("orderDB").collection("order");
-    const userCollection=client.db("orderDB").collection("users");
+    const userCollection = client.db("orderDB").collection("users");
 
     app.get("/order", async (req, res) => {
       const cursor = orderCollection.find();
@@ -57,18 +72,20 @@ async function run() {
 
     app.put("/order/:id", async (req, res) => {
       const id = req.params.id;
+      console.log(id);
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updatedOrder = req.body;
+      console.log(updatedOrder);
       const order = {
         $set: {
-          name: updatedOrder.name,
-          cname: updatedOrder.cname,
-          quantity: updatedOrder.quantity,
-          jobid: updatedOrder.jobid,
-          orderno: updatedOrder.orderno,
-          amount: updatedOrder.amount,
-          place: updatedOrder.place,
+          name: updatedOrder?.name,
+          cname: updatedOrder?.cname,
+          quantity: updatedOrder?.quantity,
+          jobid: updatedOrder?.jobid,
+          orderno: updatedOrder?.orderno,
+          amount: updatedOrder?.amount,
+          place: updatedOrder?.place,
         },
       };
       const result = await orderCollection.updateOne(filter, order, options);
@@ -89,23 +106,23 @@ async function run() {
 
     app.post("/users", async (req, res) => {
       const newUser = req.body;
-      console.log('new user create',newUser);
+      console.log("new user create", newUser);
       const result = await userCollection.insertOne(newUser);
       res.send(result);
     });
 
-    app.patch('/users', async (req, res) => {
+    app.patch("/users", async (req, res) => {
       const email = req.body.email;
       const filter = { email };
       const updatedDoc = {
-          $set: {
-              lastSignInTime: req.body?.lastSignInTime
-          }
-      }
+        $set: {
+          lastSignInTime: req.body?.lastSignInTime,
+        },
+      };
 
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
-  })
+    });
 
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
